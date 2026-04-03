@@ -1,0 +1,284 @@
+// @ts-nocheck
+(function () {
+  'use strict';
+
+  const vscode = acquireVsCodeApi();
+
+  const contentDiv = document.getElementById('preview-content');
+  const addBtn = document.getElementById('add-comment-btn');
+  const commentForm = document.getElementById('comment-form');
+  const commentInput = document.getElementById('comment-input');
+  const saveBtn = document.getElementById('comment-save');
+  const cancelBtn = document.getElementById('comment-cancel');
+  const tooltip = document.getElementById('tooltip');
+
+  let pendingAnchor = '';
+  let pendingLine = 0;
+
+  // ── Marked configuration ───────────────────────────────────────────────
+
+  // token.loc is not available in marked v17 UMD — compute line numbers from
+  // token.raw instead, by tagging each top-level token with _mcLine before parsing.
+
+  marked.use({
+    gfm: true,
+    breaks: false,
+    renderer: {
+      paragraph(token) {
+        const attr = token._mcLine ? ` data-source-line="${token._mcLine}"` : '';
+        return `<p${attr}>${this.parser.parseInline(token.tokens)}</p>\n`;
+      },
+      heading(token) {
+        const attr = token._mcLine ? ` data-source-line="${token._mcLine}"` : '';
+        const text = this.parser.parseInline(token.tokens);
+        return `<h${token.depth}${attr}>${text}</h${token.depth}>\n`;
+      },
+      blockquote(token) {
+        const attr = token._mcLine ? ` data-source-line="${token._mcLine}"` : '';
+        return `<blockquote${attr}>\n${this.parser.parse(token.tokens)}</blockquote>\n`;
+      },
+      list(token) {
+        const attr = token._mcLine ? ` data-source-line="${token._mcLine}"` : '';
+        const tag = token.ordered ? 'ol' : 'ul';
+        const items = token.items
+          .map((item) => `<li>${this.parser.parse(item.tokens)}</li>\n`)
+          .join('');
+        return `<${tag}${attr}>\n${items}</${tag}>\n`;
+      },
+      code(token) {
+        const attr = token._mcLine ? ` data-source-line="${token._mcLine}"` : '';
+        const escaped = token.text
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+        return `<pre${attr}><code>${escaped}</code></pre>\n`;
+      },
+    },
+  });
+
+  // ── Comment post-processing ────────────────────────────────────────────
+
+  function escapeHtmlAttr(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function applyComments(html, comments) {
+    let result = html;
+    for (const c of comments) {
+      const commentAttr = escapeHtmlAttr(c.comment);
+      const idAttr = escapeHtmlAttr(c.id);
+      if (c.anchor && c.anchor.trim() !== '') {
+        // Wrap the first occurrence of anchor text in a highlight span
+        const escapedAnchor = escapeRegex(c.anchor);
+        result = result.replace(
+          new RegExp(`(${escapedAnchor})`),
+          `<span class="mc-highlight" data-id="${idAttr}" data-comment="${commentAttr}">$1</span>`
+        );
+      } else if (c.line) {
+        // Inject a marker icon inside the block that starts at this source line
+        result = result.replace(
+          new RegExp(`(data-source-line="${c.line}"[^>]*>)`),
+          `$1<span class="mc-line-marker" data-id="${idAttr}" data-comment="${commentAttr}" title="${commentAttr}">&#x1F4AC;</span>`
+        );
+      }
+    }
+    return result;
+  }
+
+  // ── Line number tagging ────────────────────────────────────────────────
+
+  function parseWithLineNumbers(markdown) {
+    const tokens = marked.lexer(markdown);
+    let line = 1;
+    for (const token of tokens) {
+      token._mcLine = line;
+      if (token.raw) {
+        line += (token.raw.match(/\n/g) || []).length;
+      }
+    }
+    return marked.parser(tokens);
+  }
+
+  // ── Message handler ────────────────────────────────────────────────────
+
+  window.addEventListener('message', (event) => {
+    const msg = event.data;
+    if (msg.type === 'update') {
+      try {
+        const rawHtml = parseWithLineNumbers(msg.markdown);
+        const annotated = applyComments(rawHtml, msg.comments);
+        contentDiv.innerHTML = annotated;
+        attachTooltipListeners();
+        attachClickListeners();
+      } catch (err) {
+        contentDiv.innerHTML = '<pre class="mc-error">Render error: ' + escapeHtmlAttr(String(err)) + '</pre>';
+      }
+    } else if (msg.type === 'error') {
+      contentDiv.innerHTML = '<pre class="mc-error">' + escapeHtmlAttr(msg.message) + '</pre>';
+    }
+  });
+
+  // ── Tooltip ────────────────────────────────────────────────────────────
+
+  function attachTooltipListeners() {
+    document.querySelectorAll('.mc-highlight, .mc-line-marker').forEach((el) => {
+      el.addEventListener('mouseenter', () => {
+        const text = el.getAttribute('data-comment') || '';
+        tooltip.textContent = text;
+        tooltip.classList.remove('hidden');
+        positionTooltip(el);
+      });
+      el.addEventListener('mouseleave', () => {
+        tooltip.classList.add('hidden');
+      });
+    });
+  }
+
+  function positionTooltip(el) {
+    const rect = el.getBoundingClientRect();
+    const ttHeight = tooltip.offsetHeight || 40;
+    let top = rect.top + window.scrollY - ttHeight - 8;
+    if (top < 0) top = rect.bottom + window.scrollY + 8;
+    let left = rect.left + window.scrollX;
+    const maxLeft = document.body.clientWidth - 330;
+    if (left > maxLeft) left = maxLeft;
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+  }
+
+  // ── Line click → add comment ───────────────────────────────────────────
+
+  function attachClickListeners() {
+    document.querySelectorAll('[data-source-line]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        // Skip if user is just finishing a text selection
+        if (window.getSelection && window.getSelection().toString().trim()) return;
+        const line = parseInt(el.getAttribute('data-source-line') || '0', 10);
+        pendingAnchor = '';
+        pendingLine = line;
+        showCommentForm(e.clientY + window.scrollY);
+        e.stopPropagation();
+      });
+    });
+  }
+
+  // ── Text selection → floating button ──────────────────────────────────
+
+  document.addEventListener('mouseup', (e) => {
+    // Don't trigger if clicking our own UI
+    if (
+      addBtn.contains(e.target) ||
+      commentForm.contains(e.target)
+    ) return;
+
+    const selection = window.getSelection();
+    const text = selection ? selection.toString().trim() : '';
+
+    if (!text) {
+      addBtn.classList.add('hidden');
+      return;
+    }
+
+    // Find the nearest block element with data-source-line
+    let node = selection.anchorNode;
+    let block = null;
+    while (node && node !== document.body) {
+      if (node.nodeType === 1 && node.dataset && node.dataset.sourceLine) {
+        block = node;
+        break;
+      }
+      node = node.parentNode;
+    }
+
+    pendingAnchor = text;
+    pendingLine = block ? parseInt(block.dataset.sourceLine, 10) : 0;
+
+    // Position button below selection
+    const range = selection.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    addBtn.style.top = `${rect.bottom + window.scrollY + 6}px`;
+    addBtn.style.left = `${rect.left + window.scrollX}px`;
+    addBtn.classList.remove('hidden');
+  });
+
+  addBtn.addEventListener('click', () => {
+    addBtn.classList.add('hidden');
+    showCommentForm(parseInt(addBtn.style.top, 10) + 30);
+  });
+
+  // ── Comment form ───────────────────────────────────────────────────────
+
+  function showCommentForm(scrollY) {
+    commentInput.value = '';
+    commentForm.classList.remove('hidden');
+    commentForm.style.top = `${scrollY}px`;
+    commentForm.style.left = '50%';
+    commentForm.style.transform = 'translateX(-50%)';
+    commentInput.focus();
+  }
+
+  saveBtn.addEventListener('click', () => {
+    const text = commentInput.value.trim();
+    if (!text) return;
+    vscode.postMessage({
+      type: 'addComment',
+      anchor: pendingAnchor,
+      comment: text,
+      line: pendingLine,
+    });
+    commentForm.classList.add('hidden');
+    addBtn.classList.add('hidden');
+    pendingAnchor = '';
+    pendingLine = 0;
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    commentForm.classList.add('hidden');
+    addBtn.classList.add('hidden');
+    pendingAnchor = '';
+    pendingLine = 0;
+  });
+
+  // Close form / button when clicking outside
+  document.addEventListener('mousedown', (e) => {
+    if (
+      !commentForm.contains(e.target) &&
+      !addBtn.contains(e.target)
+    ) {
+      commentForm.classList.add('hidden');
+      // Keep addBtn visible in case user wants to click it
+    }
+  });
+
+  // Keyboard shortcut: Enter to save (Shift+Enter for newline), Escape to cancel
+  commentInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      saveBtn.click();
+    } else if (e.key === 'Escape') {
+      cancelBtn.click();
+    }
+  });
+
+  // ── Signal ready ───────────────────────────────────────────────────────
+  // In VS Code webviews the 'load' event may already have fired by the time
+  // this script executes, so also fire immediately as a fallback.
+
+  function signalReady() {
+    vscode.postMessage({ type: 'ready' });
+  }
+
+  if (document.readyState === 'complete') {
+    signalReady();
+  } else {
+    window.addEventListener('load', signalReady);
+  }
+})();

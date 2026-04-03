@@ -1,0 +1,218 @@
+/* ── Base ───────────────────────────────────────────────────────────────── */
+body {
+  font-family: var(--vscode-editor-font-family, 'Segoe UI', Tahoma, sans-serif);
+  font-size: var(--vscode-editor-font-size, 14px);
+  color: var(--vscode-editor-foreground, #d4d4d4);
+  background: var(--vscode-editor-background, #1e1e1e);
+  padding: 20px 48px;
+  line-height: 1.7;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--vscode-editor-foreground);
+  margin-top: 1.4em;
+  margin-bottom: 0.4em;
+  font-weight: 600;
+}
+
+a { color: var(--vscode-textLink-foreground, #4daafc); }
+a:hover { color: var(--vscode-textLink-activeForeground, #4daafc); }
+
+code {
+  font-family: var(--vscode-editor-font-family, monospace);
+  background: var(--vscode-textBlockQuote-background, rgba(255,255,255,0.08));
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
+pre {
+  background: var(--vscode-textBlockQuote-background, rgba(255,255,255,0.06));
+  border: 1px solid var(--vscode-panel-border, rgba(255,255,255,0.1));
+  border-radius: 6px;
+  padding: 14px 18px;
+  overflow-x: auto;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.92em;
+}
+
+blockquote {
+  border-left: 4px solid var(--vscode-focusBorder, #007acc);
+  margin: 0;
+  padding: 4px 16px;
+  opacity: 0.85;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--vscode-panel-border, rgba(255,255,255,0.15));
+  margin: 2em 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid var(--vscode-panel-border, rgba(255,255,255,0.15));
+  padding: 6px 12px;
+}
+
+th {
+  background: var(--vscode-textBlockQuote-background, rgba(255,255,255,0.06));
+}
+
+/* ── Errors ────────────────────────────────────────────────────────────── */
+.mc-error {
+  color: var(--vscode-errorForeground, #f48771);
+  white-space: pre-wrap;
+  padding: 12px;
+}
+
+/* ── Comment highlights ────────────────────────────────────────────────── */
+.mc-highlight {
+  background-color: rgba(255, 220, 0, 0.30);
+  border-bottom: 2px solid rgba(255, 180, 0, 0.75);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.mc-highlight:hover {
+  background-color: rgba(255, 220, 0, 0.50);
+}
+
+.mc-line-marker {
+  display: inline-block;
+  font-size: 0.82em;
+  margin-left: 8px;
+  cursor: pointer;
+  opacity: 0.6;
+  vertical-align: middle;
+  transition: opacity 0.15s;
+  user-select: none;
+}
+
+.mc-line-marker:hover {
+  opacity: 1;
+}
+
+/* ── Tooltip ────────────────────────────────────────────────────────────── */
+#tooltip {
+  position: absolute;
+  background: var(--vscode-editorHoverWidget-background, #252526);
+  color: var(--vscode-editorHoverWidget-foreground, #cccccc);
+  border: 1px solid var(--vscode-editorHoverWidget-border, #454545);
+  border-radius: 4px;
+  padding: 7px 12px;
+  font-size: 12px;
+  max-width: 320px;
+  word-wrap: break-word;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  line-height: 1.5;
+}
+
+#tooltip.hidden {
+  display: none;
+}
+
+/* ── Floating "Add Comment" button ─────────────────────────────────────── */
+#add-comment-btn {
+  position: absolute;
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+  border: none;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 999;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  white-space: nowrap;
+}
+
+#add-comment-btn.hidden {
+  display: none;
+}
+
+#add-comment-btn:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+/* ── Comment form ───────────────────────────────────────────────────────── */
+#comment-form {
+  position: absolute;
+  background: var(--vscode-editorWidget-background, #252526);
+  border: 1px solid var(--vscode-focusBorder, #007acc);
+  border-radius: 7px;
+  padding: 12px;
+  width: 300px;
+  z-index: 1000;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.4);
+}
+
+#comment-form.hidden {
+  display: none;
+}
+
+#comment-input {
+  width: 100%;
+  min-height: 68px;
+  resize: vertical;
+  background: var(--vscode-input-background, #3c3c3c);
+  color: var(--vscode-input-foreground, #cccccc);
+  border: 1px solid var(--vscode-input-border, #3c3c3c);
+  border-radius: 4px;
+  padding: 7px 9px;
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+}
+
+#comment-input:focus {
+  border-color: var(--vscode-focusBorder, #007acc);
+}
+
+.comment-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.comment-form-actions button {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+#comment-save {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+}
+
+#comment-save:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+#comment-cancel {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+}
+
+#comment-cancel:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
