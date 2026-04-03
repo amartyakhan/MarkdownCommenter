@@ -1,7 +1,17 @@
 import * as vscode from 'vscode';
-import { PreviewPanel } from './previewPanel';
+import { MarkdownCommenterEditorProvider } from './editorProvider';
 
 export function activate(context: vscode.ExtensionContext): void {
+  // Register the custom editor provider
+  context.subscriptions.push(
+    vscode.window.registerCustomEditorProvider(
+      MarkdownCommenterEditorProvider.viewType,
+      new MarkdownCommenterEditorProvider(context.extensionUri),
+      { supportsMultipleEditorsPerDocument: false }
+    )
+  );
+
+  // Command for context menus / editor title button — opens the custom editor
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'markdownCommenter.openPreview',
@@ -13,7 +23,11 @@ export function activate(context: vscode.ExtensionContext): void {
           );
           return;
         }
-        PreviewPanel.createOrShow(context, targetUri);
+        vscode.commands.executeCommand(
+          'vscode.openWith',
+          targetUri,
+          MarkdownCommenterEditorProvider.viewType
+        );
       }
     )
   );

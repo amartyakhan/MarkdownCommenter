@@ -37,7 +37,19 @@
           "when": "resourceLangId == markdown"
         }
       ]
-    }
+    },
+    "customEditors": [
+      {
+        "viewType": "markdownCommenter.editor",
+        "displayName": "Markdown Commenter",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "node esbuild.js --minify",

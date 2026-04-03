@@ -1,5 +1,3 @@
-import * as fs from 'fs/promises';
-import * as vscode from 'vscode';
 import { MCComment } from './types';
 
 // Matches: <!-- MC:{...} -->
@@ -58,12 +56,4 @@ export function generateId(existingComments: MCComment[]): string {
 export function stripComments(source: string): string {
   MC_REGEX.lastIndex = 0;
   return source.replace(/<!--\s*MC:\{.*?\}\s*-->\r?\n?/gs, '');
-}
-
-export async function readSource(uri: vscode.Uri): Promise<string> {
-  return fs.readFile(uri.fsPath, 'utf8');
-}
-
-export async function writeSource(uri: vscode.Uri, content: string): Promise<void> {
-  await fs.writeFile(uri.fsPath, content, 'utf8');
 }
