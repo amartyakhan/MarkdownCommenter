@@ -192,6 +192,14 @@ export class MarkdownCommenterEditorProvider
     </div>
   </div>
 
+  <div id="comments-toggle-wrapper">
+    <label class="mc-toggle-switch" title="Show all comments">
+      <input type="checkbox" id="comments-toggle-input">
+      <span class="mc-toggle-slider"></span>
+    </label>
+    <span class="mc-toggle-label">Comments</span>
+  </div>
+
   <script nonce="${nonce}" src="${markedUri}"></script>
   <script nonce="${nonce}" src="${scriptUri}"></script>
 </body>

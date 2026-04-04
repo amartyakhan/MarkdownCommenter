@@ -86,6 +86,13 @@
       .replace(/>/g, '&gt;');
   }
 
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
   function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -138,6 +145,9 @@
         contentDiv.innerHTML = annotated;
         attachTooltipListeners();
         attachClickListeners();
+        if (toggleInput.checked) {
+          showAllPinnedPopups();
+        }
       } catch (err) {
         contentDiv.innerHTML = '<pre class="mc-error">Render error: ' + escapeHtmlAttr(String(err)) + '</pre>';
       }
@@ -309,6 +319,65 @@
       saveBtn.click();
     } else if (e.key === 'Escape') {
       cancelBtn.click();
+    }
+  });
+
+  // ── Comments toggle (pin all popups open) ─────────────────────────────
+
+  const toggleInput = document.getElementById('comments-toggle-input');
+
+  function showAllPinnedPopups() {
+    hideAllPinnedPopups();
+    document.querySelectorAll('.mc-highlight, .mc-line-marker').forEach((el) => {
+      const id = el.getAttribute('data-id') || '';
+      const text = el.getAttribute('data-comment') || '';
+      const rect = el.getBoundingClientRect();
+
+      const popup = document.createElement('div');
+      popup.className = 'mc-pinned-popup';
+      popup.setAttribute('data-for', id);
+      popup.innerHTML =
+        '<div class="mc-pinned-header">Edit Comment</div>' +
+        '<textarea class="mc-pinned-input" rows="3">' + escapeHtml(text) + '</textarea>' +
+        '<div class="comment-form-actions">' +
+          '<button class="mc-pinned-delete">Delete</button>' +
+          '<div class="comment-form-actions-right">' +
+            '<button class="mc-pinned-save">Save</button>' +
+            '<button class="mc-pinned-cancel">Cancel</button>' +
+          '</div>' +
+        '</div>';
+      popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+      popup.style.left = (rect.left + window.scrollX) + 'px';
+
+      const textarea = popup.querySelector('.mc-pinned-input');
+      popup.querySelector('.mc-pinned-save').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const newText = textarea.value.trim();
+        if (!newText) return;
+        vscode.postMessage({ type: 'editComment', id, comment: newText });
+      });
+      popup.querySelector('.mc-pinned-delete').addEventListener('click', (e) => {
+        e.stopPropagation();
+        vscode.postMessage({ type: 'deleteComment', id });
+      });
+      popup.querySelector('.mc-pinned-cancel').addEventListener('click', (e) => {
+        e.stopPropagation();
+        popup.remove();
+      });
+
+      document.body.appendChild(popup);
+    });
+  }
+
+  function hideAllPinnedPopups() {
+    document.querySelectorAll('.mc-pinned-popup').forEach((el) => el.remove());
+  }
+
+  toggleInput.addEventListener('change', () => {
+    if (toggleInput.checked) {
+      showAllPinnedPopups();
+    } else {
+      hideAllPinnedPopups();
     }
   });
 

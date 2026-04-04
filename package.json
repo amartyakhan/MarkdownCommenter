@@ -1,7 +1,8 @@
 {
   "name": "markdown-commenter",
-  "displayName": "MarkdownCommenter",
+  "displayName": "Markdown Pro - Preview, Comment, Edit - All in One place",
   "description": "Add inline comments to Markdown files with a live preview",
+  "icon": "icon.png",
   "license": "MIT",
   "repository": {
     "type": "git",

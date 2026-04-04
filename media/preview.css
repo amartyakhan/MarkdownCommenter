@@ -224,3 +224,156 @@ th {
 #comment-delete.hidden {
   display: none;
 }
+
+/* ── Comments toggle switch ─────────────────────────────────────────────── */
+#comments-toggle-wrapper {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  user-select: none;
+}
+
+.mc-toggle-label {
+  font-size: 12px;
+  color: var(--vscode-editor-foreground);
+  opacity: 0.75;
+}
+
+.mc-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.mc-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mc-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--vscode-input-border, #555);
+  border-radius: 18px;
+  transition: background 0.2s;
+}
+
+.mc-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: 3px;
+  top: 3px;
+  background: var(--vscode-editor-foreground, #ccc);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.mc-toggle-switch input:checked + .mc-toggle-slider {
+  background: var(--vscode-button-background, #0e639c);
+}
+
+.mc-toggle-switch input:checked + .mc-toggle-slider::before {
+  transform: translateX(16px);
+  background: var(--vscode-button-foreground, #fff);
+}
+
+/* ── Pinned comment popups (toggle ON) ──────────────────────────────────── */
+.mc-pinned-popup {
+  position: absolute;
+  background: var(--vscode-editorWidget-background, #252526);
+  border: 1px solid var(--vscode-focusBorder, #007acc);
+  border-radius: 7px;
+  padding: 10px 12px;
+  width: 260px;
+  z-index: 998;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.mc-pinned-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-editor-foreground, #cccccc);
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+
+.mc-pinned-text {
+  font-size: 13px;
+  color: var(--vscode-editor-foreground, #cccccc);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mc-pinned-input {
+  width: 100%;
+  min-height: 68px;
+  resize: vertical;
+  background: var(--vscode-input-background, #3c3c3c);
+  color: var(--vscode-input-foreground, #cccccc);
+  border: 1px solid var(--vscode-input-border, #3c3c3c);
+  border-radius: 4px;
+  padding: 7px 9px;
+  font-size: 13px;
+  font-family: inherit;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.mc-pinned-input:focus {
+  border-color: var(--vscode-focusBorder, #007acc);
+}
+
+.mc-pinned-save {
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+  padding: 5px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.mc-pinned-save:hover {
+  background: var(--vscode-button-hoverBackground, #1177bb);
+}
+
+.mc-pinned-cancel {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+  padding: 5px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.mc-pinned-cancel:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+.mc-pinned-delete {
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  color: var(--vscode-errorForeground, #f48771);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.mc-pinned-delete:hover {
+  background: #6e2020;
+}
