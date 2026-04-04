@@ -5,3 +5,6 @@ esbuild.js
 tsconfig.json
 .gitignore
 .git/**
+.env
+publish.sh
+*.vsix
