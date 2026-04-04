@@ -7,13 +7,33 @@
   const contentDiv = document.getElementById('preview-content');
   const addBtn = document.getElementById('add-comment-btn');
   const commentForm = document.getElementById('comment-form');
+  const commentFormHeader = document.getElementById('comment-form-header');
   const commentInput = document.getElementById('comment-input');
   const saveBtn = document.getElementById('comment-save');
   const cancelBtn = document.getElementById('comment-cancel');
-  const tooltip = document.getElementById('tooltip');
+  const deleteBtn = document.getElementById('comment-delete');
 
   let pendingAnchor = '';
   let pendingLine = 0;
+  let currentEditId = null;
+  let closeTimer = null;
+
+  function cancelClose() {
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+  }
+
+  function scheduleClose() {
+    cancelClose();
+    closeTimer = setTimeout(() => {
+      if (!commentForm.contains(document.activeElement)) {
+        commentForm.classList.add('hidden');
+        currentEditId = null;
+      }
+    }, 250);
+  }
+
+  commentForm.addEventListener('mouseenter', cancelClose);
+  commentForm.addEventListener('mouseleave', scheduleClose);
 
   // ── Marked configuration ───────────────────────────────────────────────
 
@@ -126,32 +146,23 @@
     }
   });
 
-  // ── Tooltip ────────────────────────────────────────────────────────────
+  // ── Hover popover on existing comments ────────────────────────────────
 
   function attachTooltipListeners() {
     document.querySelectorAll('.mc-highlight, .mc-line-marker').forEach((el) => {
       el.addEventListener('mouseenter', () => {
+        cancelClose();
+        const id = el.getAttribute('data-id') || '';
         const text = el.getAttribute('data-comment') || '';
-        tooltip.textContent = text;
-        tooltip.classList.remove('hidden');
-        positionTooltip(el);
+        const rect = el.getBoundingClientRect();
+        showViewForm(id, text, rect.bottom + window.scrollY + 8);
       });
-      el.addEventListener('mouseleave', () => {
-        tooltip.classList.add('hidden');
+      el.addEventListener('mouseleave', scheduleClose);
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cancelClose();
       });
     });
-  }
-
-  function positionTooltip(el) {
-    const rect = el.getBoundingClientRect();
-    const ttHeight = tooltip.offsetHeight || 40;
-    let top = rect.top + window.scrollY - ttHeight - 8;
-    if (top < 0) top = rect.bottom + window.scrollY + 8;
-    let left = rect.left + window.scrollX;
-    const maxLeft = document.body.clientWidth - 330;
-    if (left > maxLeft) left = maxLeft;
-    tooltip.style.top = `${top}px`;
-    tooltip.style.left = `${left}px`;
   }
 
   // ── Line click → add comment ───────────────────────────────────────────
@@ -217,7 +228,22 @@
   // ── Comment form ───────────────────────────────────────────────────────
 
   function showCommentForm(scrollY) {
+    currentEditId = null;
+    commentFormHeader.textContent = 'Add Comment';
     commentInput.value = '';
+    deleteBtn.classList.add('hidden');
+    commentForm.classList.remove('hidden');
+    commentForm.style.top = `${scrollY}px`;
+    commentForm.style.left = '50%';
+    commentForm.style.transform = 'translateX(-50%)';
+    commentInput.focus();
+  }
+
+  function showViewForm(id, text, scrollY) {
+    currentEditId = id;
+    commentFormHeader.textContent = 'Edit Comment';
+    commentInput.value = text;
+    deleteBtn.classList.remove('hidden');
     commentForm.classList.remove('hidden');
     commentForm.style.top = `${scrollY}px`;
     commentForm.style.left = '50%';
@@ -228,21 +254,39 @@
   saveBtn.addEventListener('click', () => {
     const text = commentInput.value.trim();
     if (!text) return;
-    vscode.postMessage({
-      type: 'addComment',
-      anchor: pendingAnchor,
-      comment: text,
-      line: pendingLine,
-    });
+    if (currentEditId) {
+      vscode.postMessage({
+        type: 'editComment',
+        id: currentEditId,
+        comment: text,
+      });
+    } else {
+      vscode.postMessage({
+        type: 'addComment',
+        anchor: pendingAnchor,
+        comment: text,
+        line: pendingLine,
+      });
+    }
     commentForm.classList.add('hidden');
     addBtn.classList.add('hidden');
+    currentEditId = null;
     pendingAnchor = '';
     pendingLine = 0;
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    if (currentEditId) {
+      vscode.postMessage({ type: 'deleteComment', id: currentEditId });
+    }
+    commentForm.classList.add('hidden');
+    currentEditId = null;
   });
 
   cancelBtn.addEventListener('click', () => {
     commentForm.classList.add('hidden');
     addBtn.classList.add('hidden');
+    currentEditId = null;
     pendingAnchor = '';
     pendingLine = 0;
   });

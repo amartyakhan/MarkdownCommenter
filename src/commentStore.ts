@@ -42,6 +42,21 @@ export function deleteComment(source: string, id: string): string {
   return source.replace(pattern, '');
 }
 
+export function updateComment(source: string, id: string, newComment: string): string {
+  return source.replace(/<!--\s*MC:(\{.*?\})\s*-->/gs, (match, json) => {
+    try {
+      const obj = JSON.parse(json) as MCComment;
+      if (obj.id === id) {
+        obj.comment = newComment;
+        return `<!-- MC:${JSON.stringify(obj)} -->`;
+      }
+    } catch {
+      // skip malformed
+    }
+    return match;
+  });
+}
+
 export function generateId(existingComments: MCComment[]): string {
   let max = 0;
   for (const c of existingComments) {

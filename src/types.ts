@@ -8,6 +8,7 @@ export interface MCComment {
 export type WebviewToExtensionMessage =
   | { type: 'ready' }
   | { type: 'addComment'; anchor: string; comment: string; line: number }
+  | { type: 'editComment'; id: string; comment: string }
   | { type: 'deleteComment'; id: string };
 
 export type ExtensionToWebviewMessage =

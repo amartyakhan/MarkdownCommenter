@@ -104,26 +104,6 @@ th {
   opacity: 1;
 }
 
-/* ── Tooltip ────────────────────────────────────────────────────────────── */
-#tooltip {
-  position: absolute;
-  background: var(--vscode-editorHoverWidget-background, #252526);
-  color: var(--vscode-editorHoverWidget-foreground, #cccccc);
-  border: 1px solid var(--vscode-editorHoverWidget-border, #454545);
-  border-radius: 4px;
-  padding: 7px 12px;
-  font-size: 12px;
-  max-width: 320px;
-  word-wrap: break-word;
-  z-index: 1000;
-  pointer-events: none;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
-  line-height: 1.5;
-}
-
-#tooltip.hidden {
-  display: none;
-}
 
 /* ── Floating "Add Comment" button ─────────────────────────────────────── */
 #add-comment-btn {
@@ -149,6 +129,14 @@ th {
 }
 
 /* ── Comment form ───────────────────────────────────────────────────────── */
+#comment-form-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vscode-editor-foreground, #cccccc);
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
 #comment-form {
   position: absolute;
   background: var(--vscode-editorWidget-background, #252526);
@@ -185,9 +173,15 @@ th {
 
 .comment-form-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 8px;
   margin-top: 9px;
+}
+
+.comment-form-actions-right {
+  display: flex;
+  gap: 8px;
 }
 
 .comment-form-actions button {
@@ -215,4 +209,18 @@ th {
 
 #comment-cancel:hover {
   background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+#comment-delete {
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  color: var(--vscode-errorForeground, #f48771);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+}
+
+#comment-delete:hover {
+  background: #6e2020;
+}
+
+#comment-delete.hidden {
+  display: none;
 }
