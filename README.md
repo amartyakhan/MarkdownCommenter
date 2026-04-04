@@ -44,6 +44,19 @@ HTML comments are invisible in any standard Markdown renderer, so your files rem
 
 ## Getting Started
 
+### Install from the Extensions Marketplace
+
+1. Open VS Code
+2. Press `Cmd+Shift+X` (macOS) or `Ctrl+Shift+X` (Windows/Linux) to open the Extensions panel
+3. Search for **MarkdownCommenter**
+4. Click **Install**
+
+Or install directly from the command line:
+
+```bash
+code --install-extension amartyakhan.markdown-commenter
+```
+
 ### Install from VSIX
 
 1. Download `markdown-commenter-0.0.1.vsix`
