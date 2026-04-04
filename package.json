@@ -2,6 +2,12 @@
   "name": "markdown-commenter",
   "displayName": "MarkdownCommenter",
   "description": "Add inline comments to Markdown files with a live preview",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amartyakhan/MarkdownCommenter"
+  },
+  "publisher": "amartyakhan",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.85.0"
