@@ -24,6 +24,10 @@ if [ -z "${VSCE_PAT:-}" ] || [ -z "${OVSX_PAT:-}" ]; then
   exit 1
 fi
 
+# Track per-target results
+VSCE_STATUS="ok"
+OVSX_STATUS="ok"
+
 # Compute new version
 CURRENT=$(node -p "require('./package.json').version")
 VERSION=$(node -e "
@@ -32,7 +36,7 @@ VERSION=$(node -e "
   if (bump === 'major') console.log((major+1) + '.0.0');
   else if (bump === 'minor') console.log(major + '.' + (minor+1) + '.0');
   else if (bump === 'patch') console.log(major + '.' + minor + '.' + (patch+1));
-  else console.log(bump); // treat as explicit version
+  else console.log(bump);
 ")
 
 echo "▶ Bumping $CURRENT → $VERSION"
@@ -43,9 +47,18 @@ node -e "
   fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 
+# ── VS Code Marketplace ──────────────────────────────────────────────────────
+echo ""
 echo "▶ Publishing to VS Code Marketplace"
-npx vsce publish --pat "$VSCE_PAT"
+if npx vsce publish --pat "$VSCE_PAT"; then
+  echo "✓ VS Code Marketplace — published"
+else
+  echo "✗ VS Code Marketplace — FAILED"
+  VSCE_STATUS="failed"
+fi
 
+# ── Open VSX ─────────────────────────────────────────────────────────────────
+echo ""
 echo "▶ Building Open VSX VSIX (name: markdown-commenter)"
 node -e "
   const fs = require('fs');
@@ -57,13 +70,34 @@ npx vsce package --out markdown-commenter.vsix
 git checkout package.json
 
 echo "▶ Publishing to Open VSX"
-npx ovsx publish markdown-commenter.vsix --pat "$OVSX_PAT"
-rm markdown-commenter.vsix
+if npx ovsx publish markdown-commenter.vsix --pat "$OVSX_PAT"; then
+  echo "✓ Open VSX — published"
+else
+  echo "✗ Open VSX — FAILED"
+  OVSX_STATUS="failed"
+fi
+rm -f markdown-commenter.vsix
 
-echo "▶ Committing and tagging v$VERSION"
-git add package.json
-git commit -m "chore: bump version to $VERSION"
-git tag "v$VERSION"
-git push && git push origin "v$VERSION"
+# ── Commit & tag (only if at least one publish succeeded) ────────────────────
+echo ""
+if [ "$VSCE_STATUS" = "ok" ] || [ "$OVSX_STATUS" = "ok" ]; then
+  echo "▶ Committing and tagging v$VERSION"
+  git add package.json
+  git commit -m "chore: bump version to $VERSION"
+  git tag "v$VERSION"
+  git push && git push origin "v$VERSION"
+else
+  echo "⚠ Both publishes failed — reverting package.json, nothing committed"
+  git checkout package.json
+fi
 
-echo "✓ Done — v$VERSION published to both marketplaces"
+# ── Summary ───────────────────────────────────────────────────────────────────
+echo ""
+echo "── Publish summary ──────────────────────"
+echo "  VS Code Marketplace : $VSCE_STATUS"
+echo "  Open VSX            : $OVSX_STATUS"
+echo "─────────────────────────────────────────"
+
+if [ "$VSCE_STATUS" = "failed" ] || [ "$OVSX_STATUS" = "failed" ]; then
+  exit 1
+fi
