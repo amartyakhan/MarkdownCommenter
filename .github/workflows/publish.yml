@@ -1,0 +1,43 @@
+name: Publish Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      # ── VS Code Marketplace ────────────────────────────────────────────────
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish --pat "${{ secrets.VSCE_PAT }}"
+
+      # ── Open VSX ──────────────────────────────────────────────────────────
+      # Open VSX uses the identifier amartyakhan.markdown-commenter, which
+      # differs from the marketplace name (markdown-pro-commenter). We patch
+      # the name field in package.json, build a separate VSIX, then restore.
+      - name: Build Open VSX VSIX (patched name)
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.name = 'markdown-commenter';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          npx vsce package --out markdown-commenter.vsix
+          git checkout package.json
+
+      - name: Publish to Open VSX
+        run: npx ovsx publish markdown-commenter.vsix
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
