@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Need full history and write access to push version bump commit
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -18,6 +22,24 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # ── Version bump ───────────────────────────────────────────────────────
+      # Extract version from the tag (v0.0.4 → 0.0.4) and write it into
+      # package.json, then commit the bump back to main.
+      - name: Bump version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json
+          git commit -m "chore: bump version to $VERSION [skip ci]"
+          git push origin HEAD:main
+
       # ── VS Code Marketplace ────────────────────────────────────────────────
       - name: Publish to VS Code Marketplace
         run: npx vsce publish --pat "${{ secrets.VSCE_PAT }}"
@@ -25,7 +47,7 @@ jobs:
       # ── Open VSX ──────────────────────────────────────────────────────────
       # Open VSX uses the identifier amartyakhan.markdown-commenter, which
       # differs from the marketplace name (markdown-pro-commenter). We patch
-      # the name field in package.json, build a separate VSIX, then restore.
+      # the name field, build a separate VSIX, then restore.
       - name: Build Open VSX VSIX (patched name)
         run: |
           node -e "
