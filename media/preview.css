@@ -4,10 +4,30 @@ body {
   font-size: var(--vscode-editor-font-size, 14px);
   color: var(--vscode-editor-foreground, #d4d4d4);
   background: var(--vscode-editor-background, #1e1e1e);
-  padding: 20px 48px;
   line-height: 1.7;
-  max-width: 860px;
+  margin: 0;
+  padding: 0;
+}
+
+#mc-layout {
+  display: flex;
+  align-items: flex-start;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+#preview-content {
+  flex: 1;
+  max-width: 760px;
+  min-width: 0;
+  padding: 20px 48px;
+}
+
+#mc-sidebar {
+  flex: 0 0 280px;
+  width: 280px;
+  position: relative;
+  padding-top: 20px;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -225,6 +245,40 @@ th {
   display: none;
 }
 
+/* Read/edit body toggles inside #comment-form */
+#comment-read-body.hidden,
+#comment-edit-body.hidden {
+  display: none;
+}
+
+#comment-read-text {
+  font-size: 13px;
+  color: var(--vscode-editor-foreground, #cccccc);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 2px;
+  line-height: 1.5;
+}
+
+#comment-read-edit {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+}
+
+#comment-read-edit:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+#comment-read-delete {
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  color: var(--vscode-errorForeground, #f48771);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+}
+
+#comment-read-delete:hover {
+  background: #6e2020;
+}
+
 /* ── Comments toggle switch ─────────────────────────────────────────────── */
 #comments-toggle-wrapper {
   position: fixed;
@@ -289,6 +343,7 @@ th {
 /* ── Pinned comment popups (toggle ON) ──────────────────────────────────── */
 .mc-pinned-popup {
   position: absolute;
+  left: 0;
   background: var(--vscode-editorWidget-background, #252526);
   border: 1px solid var(--vscode-focusBorder, #007acc);
   border-radius: 7px;
@@ -376,4 +431,34 @@ th {
 
 .mc-pinned-delete:hover {
   background: #6e2020;
+}
+
+/* Pinned popup read/edit body toggles */
+.mc-pinned-read-body.hidden,
+.mc-pinned-edit-body.hidden {
+  display: none;
+}
+
+.mc-pinned-edit {
+  background: var(--vscode-button-secondaryBackground, #3a3d41);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+  padding: 5px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.mc-pinned-edit:hover {
+  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+}
+
+/* ── Sidebar connector line (dashed, when card is pushed below its line) ── */
+.mc-connector-line {
+  position: absolute;
+  left: 0;
+  width: 0;
+  border-left: 1px dashed rgba(128, 128, 128, 0.5);
+  pointer-events: none;
 }

@@ -176,18 +176,36 @@ export class MarkdownCommenterEditorProvider
   <title>Markdown Preview</title>
 </head>
 <body>
-  <div id="preview-content"></div>
+  <div id="mc-layout">
+    <div id="preview-content"></div>
+    <div id="mc-sidebar"></div>
+  </div>
 
   <button id="add-comment-btn" class="hidden" aria-label="Add comment">&#x1F4AC; Add Comment</button>
 
-  <div id="comment-form" class="hidden" role="dialog" aria-label="Add comment">
-    <div id="comment-form-header">Add Comment</div>
-    <textarea id="comment-input" placeholder="Add a comment..." rows="3"></textarea>
-    <div class="comment-form-actions">
-      <button id="comment-delete" class="hidden">Delete</button>
-      <div class="comment-form-actions-right">
-        <button id="comment-save">Save</button>
-        <button id="comment-cancel">Cancel</button>
+  <div id="comment-form" class="hidden" role="dialog" aria-label="Comment">
+    <div id="comment-form-header">Comment</div>
+
+    <!-- READ MODE -->
+    <div id="comment-read-body" class="hidden">
+      <div id="comment-read-text"></div>
+      <div class="comment-form-actions">
+        <button id="comment-read-delete">Delete</button>
+        <div class="comment-form-actions-right">
+          <button id="comment-read-edit">Edit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT MODE (new comments + after clicking Edit) -->
+    <div id="comment-edit-body">
+      <textarea id="comment-input" placeholder="Add a comment..." rows="3"></textarea>
+      <div class="comment-form-actions">
+        <button id="comment-delete" class="hidden">Delete</button>
+        <div class="comment-form-actions-right">
+          <button id="comment-save">Save</button>
+          <button id="comment-cancel">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -197,7 +215,7 @@ export class MarkdownCommenterEditorProvider
       <input type="checkbox" id="comments-toggle-input">
       <span class="mc-toggle-slider"></span>
     </label>
-    <span class="mc-toggle-label">Comments</span>
+    <span class="mc-toggle-label">Show all comments</span>
   </div>
 
   <script nonce="${nonce}" src="${markedUri}"></script>

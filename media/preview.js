@@ -12,6 +12,23 @@
   const saveBtn = document.getElementById('comment-save');
   const cancelBtn = document.getElementById('comment-cancel');
   const deleteBtn = document.getElementById('comment-delete');
+  const commentReadBody = document.getElementById('comment-read-body');
+  const commentReadText = document.getElementById('comment-read-text');
+  const commentEditBody = document.getElementById('comment-edit-body');
+  const commentReadEditBtn = document.getElementById('comment-read-edit');
+  const commentReadDeleteBtn = document.getElementById('comment-read-delete');
+
+  function showReadMode() {
+    commentReadBody.classList.remove('hidden');
+    commentEditBody.classList.add('hidden');
+    commentFormHeader.textContent = 'Comment';
+  }
+
+  function showEditMode(isNew) {
+    commentReadBody.classList.add('hidden');
+    commentEditBody.classList.remove('hidden');
+    commentFormHeader.textContent = isNew ? 'Add Comment' : 'Edit Comment';
+  }
 
   let pendingAnchor = '';
   let pendingLine = 0;
@@ -237,29 +254,50 @@
 
   // ── Comment form ───────────────────────────────────────────────────────
 
+  function getSidebarLeft() {
+    const sidebar = document.getElementById('mc-sidebar');
+    if (sidebar) {
+      return sidebar.getBoundingClientRect().left + window.scrollX;
+    }
+    return contentDiv.getBoundingClientRect().right + window.scrollX + 16;
+  }
+
   function showCommentForm(scrollY) {
     currentEditId = null;
-    commentFormHeader.textContent = 'Add Comment';
     commentInput.value = '';
     deleteBtn.classList.add('hidden');
+    showEditMode(true);
     commentForm.classList.remove('hidden');
     commentForm.style.top = `${scrollY}px`;
-    commentForm.style.left = '50%';
-    commentForm.style.transform = 'translateX(-50%)';
+    commentForm.style.left = `${getSidebarLeft()}px`;
+    commentForm.style.transform = '';
     commentInput.focus();
   }
 
   function showViewForm(id, text, scrollY) {
     currentEditId = id;
-    commentFormHeader.textContent = 'Edit Comment';
+    commentReadText.textContent = text;
     commentInput.value = text;
-    deleteBtn.classList.remove('hidden');
+    showReadMode();
     commentForm.classList.remove('hidden');
     commentForm.style.top = `${scrollY}px`;
-    commentForm.style.left = '50%';
-    commentForm.style.transform = 'translateX(-50%)';
-    commentInput.focus();
+    commentForm.style.left = `${getSidebarLeft()}px`;
+    commentForm.style.transform = '';
   }
+
+  commentReadEditBtn.addEventListener('click', () => {
+    deleteBtn.classList.remove('hidden');
+    showEditMode(false);
+    commentInput.focus();
+  });
+
+  commentReadDeleteBtn.addEventListener('click', () => {
+    if (currentEditId) {
+      vscode.postMessage({ type: 'deleteComment', id: currentEditId });
+    }
+    commentForm.classList.add('hidden');
+    currentEditId = null;
+  });
 
   saveBtn.addEventListener('click', () => {
     const text = commentInput.value.trim();
@@ -294,11 +332,15 @@
   });
 
   cancelBtn.addEventListener('click', () => {
-    commentForm.classList.add('hidden');
-    addBtn.classList.add('hidden');
-    currentEditId = null;
-    pendingAnchor = '';
-    pendingLine = 0;
+    if (currentEditId) {
+      showReadMode();
+      addBtn.classList.add('hidden');
+    } else {
+      commentForm.classList.add('hidden');
+      addBtn.classList.add('hidden');
+      pendingAnchor = '';
+      pendingLine = 0;
+    }
   });
 
   // Close form / button when clicking outside
@@ -328,28 +370,63 @@
 
   function showAllPinnedPopups() {
     hideAllPinnedPopups();
+    const sidebar = document.getElementById('mc-sidebar');
+    if (!sidebar) return;
+
+    // Collect all markers with document-Y positions, sorted top-to-bottom
+    const markers = [];
     document.querySelectorAll('.mc-highlight, .mc-line-marker').forEach((el) => {
-      const id = el.getAttribute('data-id') || '';
-      const text = el.getAttribute('data-comment') || '';
       const rect = el.getBoundingClientRect();
+      markers.push({
+        id: el.getAttribute('data-id') || '',
+        text: el.getAttribute('data-comment') || '',
+        docY: rect.top + window.scrollY
+      });
+    });
+    markers.sort((a, b) => a.docY - b.docY);
+
+    const sidebarDocTop = sidebar.getBoundingClientRect().top + window.scrollY;
+    let nextAvailableY = 0;
+
+    for (const { id, text, docY } of markers) {
+      const idealY = docY - sidebarDocTop;
+      const actualY = Math.max(idealY, nextAvailableY);
 
       const popup = document.createElement('div');
       popup.className = 'mc-pinned-popup';
       popup.setAttribute('data-for', id);
       popup.innerHTML =
-        '<div class="mc-pinned-header">Edit Comment</div>' +
-        '<textarea class="mc-pinned-input" rows="3">' + escapeHtml(text) + '</textarea>' +
-        '<div class="comment-form-actions">' +
-          '<button class="mc-pinned-delete">Delete</button>' +
-          '<div class="comment-form-actions-right">' +
-            '<button class="mc-pinned-save">Save</button>' +
-            '<button class="mc-pinned-cancel">Cancel</button>' +
+        '<div class="mc-pinned-header">Comment</div>' +
+        '<div class="mc-pinned-read-body">' +
+          '<div class="mc-pinned-text">' + escapeHtml(text) + '</div>' +
+          '<div class="comment-form-actions">' +
+            '<button class="mc-pinned-delete">Delete</button>' +
+            '<div class="comment-form-actions-right">' +
+              '<button class="mc-pinned-edit">Edit</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="mc-pinned-edit-body hidden">' +
+          '<textarea class="mc-pinned-input" rows="3">' + escapeHtml(text) + '</textarea>' +
+          '<div class="comment-form-actions">' +
+            '<div class="comment-form-actions-right">' +
+              '<button class="mc-pinned-save">Save</button>' +
+              '<button class="mc-pinned-cancel">Cancel</button>' +
+            '</div>' +
           '</div>' +
         '</div>';
-      popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
-      popup.style.left = (rect.left + window.scrollX) + 'px';
+      popup.style.top = actualY + 'px';
 
+      const readBody = popup.querySelector('.mc-pinned-read-body');
+      const editBody = popup.querySelector('.mc-pinned-edit-body');
       const textarea = popup.querySelector('.mc-pinned-input');
+
+      popup.querySelector('.mc-pinned-edit').addEventListener('click', (e) => {
+        e.stopPropagation();
+        readBody.classList.add('hidden');
+        editBody.classList.remove('hidden');
+        textarea.focus();
+      });
       popup.querySelector('.mc-pinned-save').addEventListener('click', (e) => {
         e.stopPropagation();
         const newText = textarea.value.trim();
@@ -362,15 +439,30 @@
       });
       popup.querySelector('.mc-pinned-cancel').addEventListener('click', (e) => {
         e.stopPropagation();
-        popup.remove();
+        editBody.classList.add('hidden');
+        readBody.classList.remove('hidden');
       });
 
-      document.body.appendChild(popup);
-    });
+      sidebar.appendChild(popup);
+
+      // Dotted connector line if the card was pushed below its natural Y
+      if (actualY > idealY + 2) {
+        const line = document.createElement('div');
+        line.className = 'mc-connector-line';
+        line.style.top = idealY + 'px';
+        line.style.height = (actualY - idealY) + 'px';
+        sidebar.appendChild(line);
+      }
+
+      nextAvailableY = actualY + Math.max(popup.offsetHeight, 80) + 8;
+    }
   }
 
   function hideAllPinnedPopups() {
-    document.querySelectorAll('.mc-pinned-popup').forEach((el) => el.remove());
+    const sidebar = document.getElementById('mc-sidebar');
+    if (sidebar) {
+      sidebar.querySelectorAll('.mc-pinned-popup, .mc-connector-line').forEach((el) => el.remove());
+    }
   }
 
   toggleInput.addEventListener('change', () => {

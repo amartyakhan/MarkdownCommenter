@@ -1,5 +1,5 @@
 {
-  "name": "markdown-commenter",
+  "name": "markdown-pro-commenter",
   "displayName": "Markdown Pro - Preview, Comment, Edit - All in One place",
   "description": "Add inline comments to Markdown files with a live preview",
   "icon": "icon.png",
@@ -9,7 +9,7 @@
     "url": "https://github.com/amartyakhan/MarkdownCommenter"
   },
   "publisher": "amartyakhan",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.85.0"
   },
