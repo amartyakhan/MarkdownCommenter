@@ -95,6 +95,28 @@
           .replace(/>/g, '&gt;');
         return '<pre' + attr + '><code>' + escaped + '</code></pre>\n';
       },
+      table: function (token) {
+        var attr = token._mcLine ? ' data-source-line="' + token._mcLine + '"' : '';
+        attr += token._mcLineEnd ? ' data-source-line-end="' + token._mcLineEnd + '"' : '';
+        var headerCells = '';
+        for (var j = 0; j < token.header.length; j++) {
+          var hcell = token.header[j];
+          var align = hcell.align ? ' align="' + hcell.align + '"' : '';
+          headerCells += '<th' + align + '>' + this.parser.parseInline(hcell.tokens) + '</th>\n';
+        }
+        var bodyRows = '';
+        for (var r = 0; r < token.rows.length; r++) {
+          var row = token.rows[r];
+          var rowCells = '';
+          for (var j = 0; j < row.length; j++) {
+            var align = row[j].align ? ' align="' + row[j].align + '"' : '';
+            rowCells += '<td' + align + '>' + this.parser.parseInline(row[j].tokens) + '</td>\n';
+          }
+          bodyRows += '<tr>\n' + rowCells + '</tr>\n';
+        }
+        var tbody = bodyRows ? '<tbody>' + bodyRows + '</tbody>' : '';
+        return '<table' + attr + '>\n<thead>\n<tr>\n' + headerCells + '</tr>\n</thead>\n' + tbody + '</table>\n';
+      },
     },
   });
 

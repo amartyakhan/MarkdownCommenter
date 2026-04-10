@@ -67,7 +67,12 @@ node -e "
   fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 npx vsce package --out markdown-commenter.vsix
-git checkout package.json
+node -e "
+  const fs = require('fs');
+  const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+  pkg.name = 'markdown-pro-commenter';
+  fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+"
 
 echo "▶ Publishing to Open VSX"
 if npx ovsx publish markdown-commenter.vsix --pat "$OVSX_PAT"; then

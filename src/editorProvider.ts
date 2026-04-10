@@ -8,6 +8,7 @@ import {
   updateComment,
   generateId,
   stripComments,
+  isTableLine,
 } from './commentStore';
 import { WebviewToExtensionMessage } from './types';
 
@@ -148,6 +149,7 @@ export class MarkdownCommenterEditorProvider
 
             for (const comment of existingComments) {
               const tag = `<!-- MC:${JSON.stringify(comment)} -->`;
+              let targetLine: number;
               if (comment.anchor && comment.anchor.trim()) {
                 // Find anchor text in the new markdown
                 let foundLine = -1;
@@ -157,17 +159,17 @@ export class MarkdownCommenterEditorProvider
                     break;
                   }
                 }
-                if (foundLine >= 0) {
-                  insertions.push({ line: foundLine, tag });
-                } else {
-                  // Anchor not found — append at end
-                  insertions.push({ line: newLines.length - 1, tag });
-                }
+                targetLine = foundLine >= 0 ? foundLine : newLines.length - 1;
               } else {
                 // Line-based comment — use original line, clamped
-                const targetLine = Math.min((comment.line || 1) - 1, newLines.length - 1);
-                insertions.push({ line: targetLine, tag });
+                targetLine = Math.min((comment.line || 1) - 1, newLines.length - 1);
               }
+
+              // If target is inside a table block, move past the table end
+              while (targetLine + 1 < newLines.length && isTableLine(newLines[targetLine + 1])) {
+                targetLine++;
+              }
+              insertions.push({ line: targetLine, tag });
             }
 
             // Sort insertions from bottom to top so indices stay valid

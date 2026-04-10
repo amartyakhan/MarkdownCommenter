@@ -24,11 +24,21 @@ export function insertComment(
   afterLine: number
 ): string {
   const lines = source.split('\n');
-  // afterLine is 1-indexed; clamp to valid range
-  const insertIndex = Math.max(0, Math.min(afterLine, lines.length));
+  let insertIndex = Math.max(0, Math.min(afterLine, lines.length));
+
+  // If inserting inside a table block, move to after the table ends
+  while (insertIndex < lines.length && isTableLine(lines[insertIndex])) {
+    insertIndex++;
+  }
+
   const tag = `<!-- MC:${JSON.stringify(comment)} -->`;
   lines.splice(insertIndex, 0, tag);
   return lines.join('\n');
+}
+
+export function isTableLine(line: string): boolean {
+  const trimmed = line.trim();
+  return trimmed.startsWith('|') && trimmed.endsWith('|');
 }
 
 export function deleteComment(source: string, id: string): string {
