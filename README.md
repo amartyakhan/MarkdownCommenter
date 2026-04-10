@@ -1,6 +1,6 @@
-# Markdown Pro — Comment, Review, and Let AI Fix It
+# Markdown Pro — Preview, Comment, Edit — All in One Place
 
-The missing link in AI-assisted writing workflows. Add inline comments to any Markdown file, then hand it back to an AI agent to review and address every note — all without leaving your editor.
+The missing link in AI-assisted writing workflows. Preview, inline-edit, and annotate any Markdown file with comments — then hand it back to an AI agent to address every note. All without leaving VS Code.
 
 ![Extension Overview](screenshots/overview.png)
 
@@ -11,10 +11,11 @@ AI agents increasingly produce their output as Markdown — reports, documentati
 **Markdown Pro** keeps the entire review loop inside the file:
 
 1. **AI writes** a Markdown document
-2. **You open it** in Markdown Pro and leave inline comments — on specific words, sentences, or entire sections
-3. **You pass the file back** to the AI agent: *"Address all the comments in this file"*
-4. **The AI reads your comments**, makes targeted edits, and removes the resolved annotations
-5. Repeat until the document is exactly what you need
+2. **You open it** in Markdown Pro — live preview with full formatting
+3. **You edit inline** using the WYSIWYG editor, or **leave comments** on specific words, sentences, or sections
+4. **You pass the file back** to the AI agent: *"Address all the comments in this file"*
+5. **The AI reads your comments**, makes targeted edits, and removes the resolved annotations
+6. Repeat until the document is exactly what you need
 
 Comments are stored as standard HTML comment tags inside the `.md` file itself, so they are invisible to Markdown renderers but fully readable by any AI model.
 
@@ -32,15 +33,30 @@ Pass that file to any AI with: *"Read the `<!-- MC: -->` comments and address ea
 
 ## Features
 
-### Right-Aligned Comment Sidebar
+### Live Markdown Preview
 
-All comments appear in a sidebar to the right of the content, each aligned to the exact line it annotates. When comments are close together, they stack automatically with a dotted connector line showing which line each belongs to.
+Open any `.md` file and get a rendered preview with full formatting — headings, lists, code blocks, blockquotes, images, and links — all styled with the Inter typeface.
+
+![Live Preview](screenshots/live-preview.png)
+
+### WYSIWYG Inline Editing
+
+Double-click any paragraph to enter edit mode. A formatting toolbar appears at the top with controls for:
+
+- **Headings** (H1, H2, H3)
+- **Text formatting** (Bold, Italic, Inline Code)
+- **Links**
+- **Lists** (Bulleted and Numbered)
+- **Blockquotes**
+- **Code blocks**
+
+Edits are written back to the underlying `.md` file as Markdown when you exit edit mode.
+
+![Inline Editor with Toolbar](screenshots/inline-editor.png)
 
 ### Inline Comments via Text Selection
 
 Select any text in the preview and click the floating **Add Comment** button to attach a comment. The commented text is highlighted in yellow.
-
-![Text Selection Comment](screenshots/select-comment.png)
 
 ### Line-Level Comments
 
@@ -48,9 +64,23 @@ Click any paragraph or block element to add a comment anchored to that line. A s
 
 ![Line Comment](screenshots/line-comment.png)
 
-### Pin All Comments Open
+### Right-Aligned Comment Sidebar
 
-Toggle the **Comments** switch in the top-right corner to pin all comment cards open simultaneously — useful when reviewing an entire document at a glance or screenshotting annotated output for sharing.
+All comments appear in a sidebar to the right of the content, each aligned to the exact line it annotates. When comments are close together, they stack automatically with a dotted connector line showing which line each belongs to.
+
+![Comment Sidebar](screenshots/comment-sidebar.png)
+
+### Settings Panel
+
+Click the gear icon in the top-right corner to access the settings panel with three toggles:
+
+| Setting | What it does |
+|---------|-------------|
+| **Show all comments** | Pins all comment cards open simultaneously — useful for reviewing an entire document at a glance or screenshotting annotated output |
+| **Edit mode** | Activates the WYSIWYG editor so you can click anywhere to start editing |
+| **Dark mode** | Switches the preview to a dark theme (persists across sessions) |
+
+![Settings Panel](screenshots/settings.png)
 
 ### Portable, AI-Readable Storage
 
@@ -76,13 +106,6 @@ Or install directly from the command line:
 ```bash
 code --install-extension amartyakhan.markdown-pro-commenter
 ```
-
-### Install from VSIX
-
-1. Download `markdown-pro-commenter-0.0.2.vsix`
-2. In VS Code, press `Cmd+Shift+P` (macOS) or `Ctrl+Shift+P` (Windows/Linux)
-3. Run **Extensions: Install from VSIX...**
-4. Select the downloaded `.vsix` file
 
 ### Open a Markdown File
 
@@ -113,6 +136,12 @@ You can also open the commenter from:
 1. Click anywhere on a paragraph (without selecting text)
 2. Type your comment in the form that appears
 3. Press `Enter` or click **Save**
+
+### Editing Content Inline
+
+1. Double-click a paragraph to enter edit mode
+2. Use the formatting toolbar or type directly
+3. Click **Exit** or click outside the content area to save
 
 ### Keyboard Shortcuts
 
