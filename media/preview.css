@@ -1,57 +1,117 @@
+/* ── Design Tokens ─────────────────────────────────────────────────────── */
+/* Note: @font-face declarations are injected via <style> in editorProvider.ts
+   because webview CSS cannot use relative paths for font files. */
+:root {
+  /* Surface hierarchy */
+  --bl-surface:                   #f7f9fc;
+  --bl-surface-container-lowest:  #ffffff;
+  --bl-surface-container-low:     #f0f4f8;
+  --bl-surface-container:         #e8eff4;
+  --bl-surface-container-high:    #e1e9f0;
+  --bl-surface-container-highest: #d9e4ec;
+
+  /* Primary */
+  --bl-primary:       #0061a4;
+  --bl-primary-dim:   #005590;
+  --bl-primary-fixed: #d1e4ff;
+  --bl-on-primary:    #f5f7ff;
+
+  /* Secondary / Tertiary */
+  --bl-secondary-container: #e1e2e8;
+  --bl-tertiary-container:  #dbdefe;
+
+  /* Text */
+  --bl-on-surface:         #29343a;
+  --bl-on-error-container: #752121;
+
+  /* Borders & outlines */
+  --bl-outline-variant: rgba(168, 179, 187, 0.30);
+
+  /* Error */
+  --bl-error: #9f403d;
+
+  /* Elevation */
+  --bl-shadow-float: 0px 4px 20px rgba(41, 52, 58, 0.04),
+                     0px 2px 4px rgba(41, 52, 58, 0.08);
+
+  /* Glass */
+  --bl-glass-bg:   rgba(255, 255, 255, 0.85);
+  --bl-glass-blur: 20px;
+
+  /* Typography */
+  --bl-font:      'Inter', sans-serif;
+  --bl-display:    2.75rem;
+  --bl-body:       0.875rem;
+  --bl-label-sm:   0.6875rem;
+  --bl-label-md:   0.75rem;
+}
+
 /* ── Base ───────────────────────────────────────────────────────────────── */
 body {
-  font-family: var(--vscode-editor-font-family, 'Segoe UI', Tahoma, sans-serif);
-  font-size: var(--vscode-editor-font-size, 14px);
-  color: var(--vscode-editor-foreground, #d4d4d4);
-  background: var(--vscode-editor-background, #1e1e1e);
-  line-height: 1.7;
+  font-family: var(--bl-font);
+  font-size: var(--bl-body);
+  color: var(--bl-on-surface);
+  background: var(--bl-surface);
+  line-height: 1.6;
   margin: 0;
   padding: 0;
 }
 
 #mc-layout {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
 #preview-content {
   flex: 1;
   max-width: 760px;
   min-width: 0;
-  padding: 20px 48px;
+  padding: 24px 48px;
+  background: var(--bl-surface-container-lowest);
 }
 
 #mc-sidebar {
   flex: 0 0 280px;
   width: 280px;
   position: relative;
-  padding-top: 20px;
+  padding-top: 24px;
 }
 
+/* ── Typography ────────────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--vscode-editor-foreground);
+  color: var(--bl-on-surface);
   margin-top: 1.4em;
   margin-bottom: 0.4em;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'tnum';
 }
 
-a { color: var(--vscode-textLink-foreground, #4daafc); }
-a:hover { color: var(--vscode-textLink-activeForeground, #4daafc); }
+h1 {
+  font-size: var(--bl-display);
+}
 
+a { color: var(--bl-primary); }
+a:hover { color: var(--bl-primary-dim); }
+
+/* ── Code ──────────────────────────────────────────────────────────────── */
 code {
-  font-family: var(--vscode-editor-font-family, monospace);
-  background: var(--vscode-textBlockQuote-background, rgba(255,255,255,0.08));
-  border-radius: 3px;
+  font-family: var(--bl-font);
+  background: var(--bl-secondary-container);
+  border-radius: 0;
   padding: 1px 5px;
   font-size: 0.9em;
+  color: var(--bl-on-surface);
 }
 
 pre {
-  background: var(--vscode-textBlockQuote-background, rgba(255,255,255,0.06));
-  border: 1px solid var(--vscode-panel-border, rgba(255,255,255,0.1));
-  border-radius: 6px;
+  background: var(--bl-secondary-container);
+  border: none;
+  border-radius: 0;
   padding: 14px 18px;
   overflow-x: auto;
 }
@@ -62,82 +122,105 @@ pre code {
   font-size: 0.92em;
 }
 
+/* ── Blockquote ────────────────────────────────────────────────────────── */
 blockquote {
-  border-left: 4px solid var(--vscode-focusBorder, #007acc);
+  border-left: 4px solid var(--bl-primary-fixed);
+  background: var(--bl-surface-container-low);
   margin: 0;
   padding: 4px 16px;
-  opacity: 0.85;
 }
 
+/* ── Horizontal rule ───────────────────────────────────────────────────── */
 hr {
   border: none;
-  border-top: 1px solid var(--vscode-panel-border, rgba(255,255,255,0.15));
+  height: 2px;
+  background: var(--bl-surface-container-highest);
   margin: 2em 0;
 }
 
+/* ── Tables ─────────────────────────────────────────────────────────────── */
 table {
   border-collapse: collapse;
   width: 100%;
 }
 
 th, td {
-  border: 1px solid var(--vscode-panel-border, rgba(255,255,255,0.15));
-  padding: 6px 12px;
+  border: none;
+  padding: 8px 12px;
 }
 
 th {
-  background: var(--vscode-textBlockQuote-background, rgba(255,255,255,0.06));
+  background: var(--bl-surface-container);
+  color: var(--bl-on-surface);
+  font-size: var(--bl-label-md);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+}
+
+tr:nth-child(even) td {
+  background: var(--bl-surface-container-low);
 }
 
 /* ── Errors ────────────────────────────────────────────────────────────── */
 .mc-error {
-  color: var(--vscode-errorForeground, #f48771);
+  color: var(--bl-on-error-container);
+  background: var(--bl-surface-container-lowest);
+  border-left: 3px solid var(--bl-error);
   white-space: pre-wrap;
   padding: 12px;
 }
 
 /* ── Comment highlights ────────────────────────────────────────────────── */
 .mc-highlight {
-  background-color: rgba(255, 220, 0, 0.30);
-  border-bottom: 2px solid rgba(255, 180, 0, 0.75);
-  border-radius: 2px;
+  background-color: var(--bl-primary-fixed);
+  border-bottom: 2px solid var(--bl-primary);
+  border-radius: 0;
   cursor: pointer;
   transition: background-color 0.15s;
 }
 
 .mc-highlight:hover {
-  background-color: rgba(255, 220, 0, 0.50);
+  background-color: var(--bl-surface-container-highest);
 }
 
 .mc-line-marker {
-  display: inline-block;
-  font-size: 0.82em;
-  margin-left: 8px;
+  float: right;
+  font-size: var(--bl-label-sm);
+  color: var(--bl-primary);
+  margin-left: 12px;
+  margin-top: 2px;
   cursor: pointer;
-  opacity: 0.6;
-  vertical-align: middle;
+  opacity: 0.5;
   transition: opacity 0.15s;
   user-select: none;
+  line-height: 1;
+}
+
+.mc-line-marker svg {
+  display: block;
 }
 
 .mc-line-marker:hover {
   opacity: 1;
 }
 
-
 /* ── Floating "Add Comment" button ─────────────────────────────────────── */
 #add-comment-btn {
   position: absolute;
-  background: var(--vscode-button-background, #0e639c);
-  color: var(--vscode-button-foreground, #ffffff);
+  background: linear-gradient(to bottom, var(--bl-primary), var(--bl-primary-dim));
+  color: var(--bl-on-primary);
   border: none;
-  border-radius: 5px;
+  border-radius: 0;
   padding: 5px 12px;
-  font-size: 12px;
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
   cursor: pointer;
   z-index: 999;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--bl-shadow-float);
   white-space: nowrap;
+  transition: background 0.15s;
 }
 
 #add-comment-btn.hidden {
@@ -145,27 +228,33 @@ th {
 }
 
 #add-comment-btn:hover {
-  background: var(--vscode-button-hoverBackground, #1177bb);
+  background: var(--bl-primary-dim);
 }
 
 /* ── Comment form ───────────────────────────────────────────────────────── */
 #comment-form-header {
-  font-size: 12px;
+  font-size: var(--bl-label-sm);
   font-weight: 600;
-  color: var(--vscode-editor-foreground, #cccccc);
+  color: var(--bl-on-surface);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin-bottom: 8px;
-  opacity: 0.8;
+  background: var(--bl-tertiary-container);
+  display: inline-block;
+  padding: 2px 8px;
 }
 
 #comment-form {
   position: absolute;
-  background: var(--vscode-editorWidget-background, #252526);
-  border: 1px solid var(--vscode-focusBorder, #007acc);
-  border-radius: 7px;
+  background: var(--bl-glass-bg);
+  backdrop-filter: blur(var(--bl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--bl-glass-blur));
+  border: none;
+  border-radius: 0;
   padding: 12px;
   width: 300px;
   z-index: 1000;
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--bl-shadow-float);
 }
 
 #comment-form.hidden {
@@ -176,19 +265,23 @@ th {
   width: 100%;
   min-height: 68px;
   resize: vertical;
-  background: var(--vscode-input-background, #3c3c3c);
-  color: var(--vscode-input-foreground, #cccccc);
-  border: 1px solid var(--vscode-input-border, #3c3c3c);
-  border-radius: 4px;
+  background: var(--bl-surface-container-low);
+  color: var(--bl-on-surface);
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0;
   padding: 7px 9px;
-  font-size: 13px;
-  font-family: inherit;
+  font-size: var(--bl-body);
+  font-family: var(--bl-font);
   box-sizing: border-box;
-  outline: none;
+  outline: 1px solid var(--bl-outline-variant);
+  transition: background 0.15s, outline-color 0.15s, border-color 0.15s;
 }
 
 #comment-input:focus {
-  border-color: var(--vscode-focusBorder, #007acc);
+  background: var(--bl-surface-container-highest);
+  border-left: 2px solid var(--bl-primary);
+  outline: 1px solid var(--bl-outline-variant);
 }
 
 .comment-form-actions {
@@ -196,7 +289,7 @@ th {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-top: 9px;
+  margin-top: 16px;
 }
 
 .comment-form-actions-right {
@@ -207,102 +300,104 @@ th {
 .comment-form-actions button {
   padding: 5px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
+  transition: background 0.15s;
 }
 
+/* Primary button */
 #comment-save {
-  background: var(--vscode-button-background, #0e639c);
-  color: var(--vscode-button-foreground, #ffffff);
+  background: linear-gradient(to bottom, var(--bl-primary), var(--bl-primary-dim));
+  color: var(--bl-on-primary);
 }
 
 #comment-save:hover {
-  background: var(--vscode-button-hoverBackground, #1177bb);
+  background: var(--bl-primary-dim);
 }
 
+/* Secondary button */
 #comment-cancel {
-  background: var(--vscode-button-secondaryBackground, #3a3d41);
-  color: var(--vscode-button-secondaryForeground, #cccccc);
+  background: var(--bl-secondary-container);
+  color: var(--bl-on-surface);
 }
 
 #comment-cancel:hover {
-  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+  background: var(--bl-surface-container-high);
 }
 
-#comment-delete {
-  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
-  color: var(--vscode-errorForeground, #f48771);
-  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
-}
 
-#comment-delete:hover {
-  background: #6e2020;
-}
-
-#comment-delete.hidden {
-  display: none;
-}
-
-/* Read/edit body toggles inside #comment-form */
-#comment-read-body.hidden,
-#comment-edit-body.hidden {
-  display: none;
-}
-
-#comment-read-text {
-  font-size: 13px;
-  color: var(--vscode-editor-foreground, #cccccc);
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin-bottom: 2px;
-  line-height: 1.5;
-}
-
-#comment-read-edit {
-  background: var(--vscode-button-secondaryBackground, #3a3d41);
-  color: var(--vscode-button-secondaryForeground, #cccccc);
-}
-
-#comment-read-edit:hover {
-  background: var(--vscode-button-secondaryHoverBackground, #45494e);
-}
-
-#comment-read-delete {
-  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
-  color: var(--vscode-errorForeground, #f48771);
-  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
-}
-
-#comment-read-delete:hover {
-  background: #6e2020;
-}
-
-/* ── Comments toggle switch ─────────────────────────────────────────────── */
-#comments-toggle-wrapper {
+/* ── Settings menu ─────────────────────────────────────────────────────── */
+#mc-settings {
   position: fixed;
   top: 14px;
   right: 16px;
   z-index: 1001;
-  display: flex;
-  align-items: center;
-  gap: 7px;
   user-select: none;
 }
 
-.mc-toggle-label {
-  font-size: 12px;
-  color: var(--vscode-editor-foreground);
-  opacity: 0.75;
+#mc-settings-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bl-surface-container-low);
+  color: var(--bl-on-surface);
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
+#mc-settings-btn:hover {
+  background: var(--bl-surface-container-highest);
+}
+
+#mc-settings-dropdown {
+  position: absolute;
+  top: 38px;
+  right: 0;
+  width: 220px;
+  background: var(--bl-glass-bg);
+  backdrop-filter: blur(var(--bl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--bl-glass-blur));
+  box-shadow: var(--bl-shadow-float);
+  border-radius: 0;
+  padding: 6px 0;
+}
+
+#mc-settings-dropdown.hidden {
+  display: none;
+}
+
+.mc-settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mc-settings-item:hover {
+  background: var(--bl-surface-container-high);
+}
+
+.mc-settings-item-label {
+  font-size: var(--bl-label-md);
+  color: var(--bl-on-surface);
+}
+
+/* ── Toggle switch (shared) ────────────────────────────────────────────── */
 .mc-toggle-switch {
   position: relative;
   display: inline-block;
   width: 34px;
   height: 18px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .mc-toggle-switch input {
@@ -314,8 +409,8 @@ th {
 .mc-toggle-slider {
   position: absolute;
   inset: 0;
-  background: var(--vscode-input-border, #555);
-  border-radius: 18px;
+  background: var(--bl-surface-container-highest);
+  border-radius: 0;
   transition: background 0.2s;
 }
 
@@ -326,111 +421,129 @@ th {
   height: 12px;
   left: 3px;
   top: 3px;
-  background: var(--vscode-editor-foreground, #ccc);
-  border-radius: 50%;
+  background: var(--bl-on-surface);
+  border-radius: 0;
   transition: transform 0.2s;
 }
 
 .mc-toggle-switch input:checked + .mc-toggle-slider {
-  background: var(--vscode-button-background, #0e639c);
+  background: var(--bl-primary);
 }
 
 .mc-toggle-switch input:checked + .mc-toggle-slider::before {
   transform: translateX(16px);
-  background: var(--vscode-button-foreground, #fff);
+  background: var(--bl-on-primary);
 }
 
-/* ── Pinned comment popups (toggle ON) ──────────────────────────────────── */
+/* ── Comment popups (sidebar) ──────────────────────────────────────────── */
+.mc-pinned-popup.hidden {
+  display: none;
+}
+
 .mc-pinned-popup {
   position: absolute;
   left: 0;
-  background: var(--vscode-editorWidget-background, #252526);
-  border: 1px solid var(--vscode-focusBorder, #007acc);
-  border-radius: 7px;
+  background: var(--bl-glass-bg);
+  backdrop-filter: blur(var(--bl-glass-blur));
+  -webkit-backdrop-filter: blur(var(--bl-glass-blur));
+  border: none;
+  border-radius: 0;
   padding: 10px 12px;
   width: 260px;
   z-index: 998;
-  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--bl-shadow-float);
   cursor: pointer;
 }
 
 .mc-pinned-header {
-  font-size: 12px;
+  font-size: var(--bl-label-sm);
   font-weight: 600;
-  color: var(--vscode-editor-foreground, #cccccc);
-  opacity: 0.8;
+  color: var(--bl-on-surface);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin-bottom: 6px;
+  background: var(--bl-tertiary-container);
+  display: inline-block;
+  padding: 2px 8px;
 }
 
 .mc-pinned-text {
-  font-size: 13px;
-  color: var(--vscode-editor-foreground, #cccccc);
+  font-size: var(--bl-body);
+  font-family: var(--bl-font);
+  color: var(--bl-on-surface);
   white-space: pre-wrap;
   word-break: break-word;
+  background: var(--bl-surface-container-lowest);
+  padding: 8px;
 }
 
 .mc-pinned-input {
   width: 100%;
   min-height: 68px;
   resize: vertical;
-  background: var(--vscode-input-background, #3c3c3c);
-  color: var(--vscode-input-foreground, #cccccc);
-  border: 1px solid var(--vscode-input-border, #3c3c3c);
-  border-radius: 4px;
+  background: var(--bl-surface-container-low);
+  color: var(--bl-on-surface);
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0;
   padding: 7px 9px;
-  font-size: 13px;
-  font-family: inherit;
+  font-size: var(--bl-body);
+  font-family: var(--bl-font);
   box-sizing: border-box;
-  outline: none;
+  outline: 1px solid var(--bl-outline-variant);
+  transition: background 0.15s, outline-color 0.15s, border-color 0.15s;
 }
 
 .mc-pinned-input:focus {
-  border-color: var(--vscode-focusBorder, #007acc);
+  background: var(--bl-surface-container-highest);
+  border-left: 2px solid var(--bl-primary);
+  outline: 1px solid var(--bl-outline-variant);
 }
 
 .mc-pinned-save {
-  background: var(--vscode-button-background, #0e639c);
-  color: var(--vscode-button-foreground, #ffffff);
+  background: linear-gradient(to bottom, var(--bl-primary), var(--bl-primary-dim));
+  color: var(--bl-on-primary);
   padding: 5px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
 }
 
 .mc-pinned-save:hover {
-  background: var(--vscode-button-hoverBackground, #1177bb);
+  background: var(--bl-primary-dim);
 }
 
 .mc-pinned-cancel {
-  background: var(--vscode-button-secondaryBackground, #3a3d41);
-  color: var(--vscode-button-secondaryForeground, #cccccc);
+  background: var(--bl-secondary-container);
+  color: var(--bl-on-surface);
   padding: 5px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
 }
 
 .mc-pinned-cancel:hover {
-  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+  background: var(--bl-surface-container-high);
 }
 
 .mc-pinned-delete {
-  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
-  color: var(--vscode-errorForeground, #f48771);
-  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+  background: var(--bl-surface-container-low);
+  color: var(--bl-error);
+  border: none;
+  border-left: 3px solid var(--bl-error);
   padding: 5px 14px;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
 }
 
 .mc-pinned-delete:hover {
-  background: #6e2020;
+  background: var(--bl-surface-container-highest);
 }
 
 /* Pinned popup read/edit body toggles */
@@ -440,25 +553,143 @@ th {
 }
 
 .mc-pinned-edit {
-  background: var(--vscode-button-secondaryBackground, #3a3d41);
-  color: var(--vscode-button-secondaryForeground, #cccccc);
+  background: var(--bl-secondary-container);
+  color: var(--bl-on-surface);
   padding: 5px 14px;
   border: none;
-  border-radius: 4px;
+  border-radius: 0;
   cursor: pointer;
-  font-size: 12px;
-  font-family: inherit;
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
 }
 
 .mc-pinned-edit:hover {
-  background: var(--vscode-button-secondaryHoverBackground, #45494e);
+  background: var(--bl-surface-container-high);
 }
 
-/* ── Sidebar connector line (dashed, when card is pushed below its line) ── */
-.mc-connector-line {
+/* ── Connector lines (SVG overlay) ─────────────────────────────────────── */
+#mc-connectors {
   position: absolute;
+  top: 0;
   left: 0;
-  width: 0;
-  border-left: 1px dashed rgba(128, 128, 128, 0.5);
+  width: 100%;
   pointer-events: none;
+  z-index: 997;
+  overflow: visible;
+}
+
+#mc-connectors line {
+  stroke: var(--bl-on-surface);
+  stroke-opacity: 0.15;
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
+
+/* ── Edit toolbar ─────────────────────────────────────────────────────── */
+#mc-edit-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  background: var(--bl-surface-container);
+  border-radius: 0;
+  width: 100%;
+}
+
+#mc-edit-toolbar.hidden {
+  display: none;
+}
+
+.mc-toolbar-btn {
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--bl-on-surface);
+  border: none;
+  border-radius: 0;
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mc-toolbar-label {
+  font-size: var(--bl-label-md);
+  font-family: var(--bl-font);
+  font-weight: 600;
+  color: var(--bl-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 4px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.mc-toolbar-spacer {
+  flex: 1;
+}
+
+.mc-toolbar-btn:hover {
+  background: var(--bl-surface-container-high);
+}
+
+.mc-toolbar-exit {
+  color: var(--bl-primary);
+  font-weight: 600;
+}
+
+.mc-toolbar-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--bl-outline-variant);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* ── WYSIWYG edit mode ────────────────────────────────────────────────── */
+#preview-content.mc-edit-mode {
+  cursor: text;
+  outline: none;
+  border-left: 2px solid var(--bl-primary);
+}
+
+#preview-content.mc-edit-mode:focus {
+  outline: none;
+}
+
+#preview-content.mc-edit-mode *::selection {
+  background: var(--bl-primary-fixed);
+}
+
+/* ── Dark mode ─────────────────────────────────────────────────────────── */
+body.mc-dark {
+  --bl-surface:                   #1a1c1e;
+  --bl-surface-container-lowest:  #111315;
+  --bl-surface-container-low:     #1e2225;
+  --bl-surface-container:         #262b2f;
+  --bl-surface-container-high:    #303539;
+  --bl-surface-container-highest: #3b4146;
+
+  --bl-primary:       #8ecaff;
+  --bl-primary-dim:   #6bb3f0;
+  --bl-primary-fixed: #1d3c5c;
+  --bl-on-primary:    #003258;
+
+  --bl-secondary-container: #3a3d44;
+  --bl-tertiary-container:  #2e3060;
+
+  --bl-on-surface:         #dce4ea;
+  --bl-on-error-container: #ffb3b0;
+
+  --bl-outline-variant: rgba(140, 155, 165, 0.25);
+
+  --bl-error: #ff8a80;
+
+  --bl-shadow-float: 0px 4px 20px rgba(0, 0, 0, 0.25),
+                     0px 2px 4px rgba(0, 0, 0, 0.35);
+
+  --bl-glass-bg: rgba(26, 28, 30, 0.88);
 }

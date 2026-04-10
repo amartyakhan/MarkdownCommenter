@@ -9,7 +9,8 @@ export type WebviewToExtensionMessage =
   | { type: 'ready' }
   | { type: 'addComment'; anchor: string; comment: string; line: number }
   | { type: 'editComment'; id: string; comment: string }
-  | { type: 'deleteComment'; id: string };
+  | { type: 'deleteComment'; id: string }
+  | { type: 'updateDocument'; markdown: string };
 
 export type ExtensionToWebviewMessage =
-  | { type: 'update'; markdown: string; comments: MCComment[] };
+  | { type: 'update'; markdown: string; rawMarkdown: string; comments: MCComment[] };
