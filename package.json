@@ -9,7 +9,7 @@
     "url": "https://github.com/amartyakhan/MarkdownCommenter"
   },
   "publisher": "amartyakhan",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "engines": {
     "vscode": "^1.85.0"
   },
