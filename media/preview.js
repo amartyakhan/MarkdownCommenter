@@ -137,31 +137,84 @@
       .replace(/>/g, '&gt;');
   }
 
-  function escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
-  function applyComments(html, comments) {
+  function applyLineMarkersToHtml(html, comments) {
     var result = html;
     for (var i = 0; i < comments.length; i++) {
       var c = comments[i];
+      if (c.anchor && c.anchor.trim() !== '') continue;
+      if (!c.line) continue;
       var commentAttr = escapeHtmlAttr(c.comment);
       var idAttr = escapeHtmlAttr(c.id);
-      if (c.anchor && c.anchor.trim() !== '') {
-        var escapedAnchor = escapeRegex(c.anchor);
-        result = result.replace(
-          new RegExp('(' + escapedAnchor + ')'),
-          '<span class="mc-highlight" data-id="' + idAttr + '" data-comment="' + commentAttr + '">$1</span>'
-        );
-      } else if (c.line) {
-        var markerSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2h12v8H6.5L3 13.5V10H2V2z"/></svg>';
-        result = result.replace(
-          new RegExp('(data-source-line="' + c.line + '"[^>]*>)'),
-          '$1<span class="mc-line-marker" data-id="' + idAttr + '" data-comment="' + commentAttr + '" title="' + commentAttr + '">' + markerSvg + '</span>'
-        );
-      }
+      var markerSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2h12v8H6.5L3 13.5V10H2V2z"/></svg>';
+      result = result.replace(
+        new RegExp('(data-source-line="' + c.line + '"[^>]*>)'),
+        '$1<span class="mc-line-marker" data-id="' + idAttr + '" data-comment="' + commentAttr + '" title="' + commentAttr + '">' + markerSvg + '</span>'
+      );
     }
     return result;
+  }
+
+  // Wrap the anchor text in the DOM by walking text nodes. This handles anchors
+  // that span inline markdown (code spans, bold, links, etc.) which the rendered
+  // HTML splits across multiple elements.
+  function wrapAnchorInDOM(anchor, id, comment) {
+    if (!anchor || !anchor.trim()) return false;
+
+    var walker = document.createTreeWalker(contentDiv, NodeFilter.SHOW_TEXT, null, false);
+    var textNodes = [];
+    var offsets = [];
+    var fullText = '';
+    var node;
+    while ((node = walker.nextNode())) {
+      var parent = node.parentNode;
+      if (parent && parent.closest && parent.closest('.mc-line-marker, script, style')) continue;
+      offsets.push(fullText.length);
+      textNodes.push(node);
+      fullText += node.nodeValue;
+    }
+
+    var idx = fullText.indexOf(anchor);
+    if (idx < 0) return false;
+    var end = idx + anchor.length;
+
+    for (var i = 0; i < textNodes.length; i++) {
+      var tn = textNodes[i];
+      var tnStart = offsets[i];
+      var tnEnd = tnStart + tn.nodeValue.length;
+
+      var overlapStart = Math.max(tnStart, idx);
+      var overlapEnd = Math.min(tnEnd, end);
+      if (overlapStart >= overlapEnd) continue;
+
+      var localStart = overlapStart - tnStart;
+      var localEnd = overlapEnd - tnStart;
+
+      var target = tn;
+      if (localStart > 0) {
+        target = target.splitText(localStart);
+      }
+      if (localEnd - localStart < target.nodeValue.length) {
+        target.splitText(localEnd - localStart);
+      }
+
+      var span = document.createElement('span');
+      span.className = 'mc-highlight';
+      span.setAttribute('data-id', id);
+      span.setAttribute('data-comment', comment);
+      target.parentNode.insertBefore(span, target);
+      span.appendChild(target);
+    }
+
+    return true;
+  }
+
+  function applyAnchorHighlights(comments) {
+    for (var i = 0; i < comments.length; i++) {
+      var c = comments[i];
+      if (c.anchor && c.anchor.trim()) {
+        wrapAnchorInDOM(c.anchor, c.id, c.comment);
+      }
+    }
   }
 
   // ── Line number tagging ────────────────────────────────────────────────
@@ -439,8 +492,9 @@
       currentMarkdown = msg.rawMarkdown || '';
       buildImagePathMap(msg.markdown, msg.rawMarkdown || '');
       var rawHtml = parseWithLineNumbers(msg.markdown);
-      var annotated = applyComments(rawHtml, msg.comments);
-      contentDiv.innerHTML = annotated;
+      var withLineMarkers = applyLineMarkersToHtml(rawHtml, msg.comments);
+      contentDiv.innerHTML = withLineMarkers;
+      applyAnchorHighlights(msg.comments);
       attachTooltipListeners();
       attachClickListeners();
       createCommentPopups();
